@@ -5,7 +5,7 @@ import telebot
 from telebot import types
 from bs4 import BeautifulSoup
 
-bot = telebot.TeleBot("5564834978:AAEUxPipelnCMNubENpEHrOBgV2OqHJYF1U")
+bot = telebot.TeleBot("YOUR_TOKEN")
 pr_l = []
 links = []
 size_list = ["large", "medium", ""]
