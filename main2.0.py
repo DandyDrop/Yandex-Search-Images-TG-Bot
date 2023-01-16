@@ -5,7 +5,7 @@ import telebot
 from telebot import types
 from bs4 import BeautifulSoup
 
-bot = telebot.TeleBot("5564834978:AAEUxPipelnCMNubENpEHrOBgV2OqHJYF1U")
+bot = telebot.TeleBot("5399775869:AAHLepfHtjFc6oZ-UjeeExX91S0SrU2bL5w")
 all_users = {}
 
 size_list = ["large", "medium", ""]
@@ -48,12 +48,14 @@ def search(message):
             soup = BeautifulSoup(response.text, 'html.parser')
             img1 = str(soup.select('.serp-item__link'))
 
-            if len(img1) == 2:
-                bot.send_message(chat_id=message.from_user.id, text="Seems like we got a captcha. Try to use "
-                                                                    "Buttons of previous photo to get more images")
+            if "captcha" in soup:
+                bot.send_message(chat_id=message.chat.id, text="Seems like we got a captcha. Try to use "
+                                                               "Buttons of previous photo to get more images")
                 return
+            if len(img1) == 2:
+                bot.send_message(chat_id=message.chat.id, text="Got no images. Try to enter another prompt, please")
 
-            all_users[message.chat.id] = {'pr_l': [message.text], 'links': []}
+            all_users[message.chat.id] = {'prompt': message.text, 'main_url': main_url, 'links': []}
             while True:
                 try:
                     img1 = img1[img1.index("img_url=") + 8:]
@@ -75,26 +77,25 @@ def search(message):
 def callback_inline(call):
     try:
         id = call.message.chat.id
-        print(id)
         if call.data == "buttonmore":
             if len(all_users[id]['links']) != 0:
                 bot.send_photo(chat_id=id,
                                photo=all_users[id]['links'].pop(),
                                reply_markup=markup)
             else:
-                if len(all_users[id]['pr_l']) != 0:
-                    bot.send_message(chat_id=call.message.chat.id,
+                bot.send_message(chat_id=call.message.chat.id,
                                      text=f"Search again to get more. Your last command:"
-                                          f"\n{all_users[id]['pr_l'][0]}\n\n"
-                                          f'<a href="{all_users[id]["pr_l"][1]}">All Results</a>',
+                                          f"\n{all_users[id]['prompt']}\n\n"
+                                          f'<a href="{all_users[id]["mail_url"]}">All Results</a>',
                                      parse_mode='HTML')
-                else:
-                    bot.send_message(chat_id=call.message.chat.id, text="/search to get some nice images")
     except Exception as e:
         e = str(e)
-        bot.send_message(chat_id=call.message.chat.id,
-                         text="Got an error, try again, please. Error text:\n"
-                              f"{e}")
-
+        if str(call.message.chat.id) == e:
+            bot.send_message(chat_id=call.message.chat.id,
+                             text="Seems like there are no images in storage. Please, /search")
+        else:
+            bot.send_message(chat_id=call.message.chat.id,
+                             text="Got an error, try again, please. Error text:\n"
+                                  f"{e}")
 
 bot.polling()
