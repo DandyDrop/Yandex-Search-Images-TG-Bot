@@ -5,7 +5,7 @@ import telebot
 from telebot import types
 from bs4 import BeautifulSoup
 
-bot = telebot.TeleBot("YOUR_TOKEN")
+bot = telebot.TeleBot("5399775869:AAHLepfHtjFc6oZ-UjeeExX91S0SrU2bL5w")
 all_users = {}
 
 size_list = ["large", "medium", ""]
@@ -20,7 +20,7 @@ def mistake(message):
                           "/search beautiful mid journey arts|site=example.com|size=large\n"
                           "/search wide view of megalopolis|site=example.com|\n"
                           "/search insane 3d works|size=random\n"
-                          "Note that size needs to be entered lase and main prompt needs to be entered first. "
+                          "Note that size needs to be entered last and main prompt needs to be entered first. "
                           "Else u will get an error or not right result")
 
 @bot.message_handler(commands=["search"])
@@ -48,12 +48,14 @@ def search(message):
             soup = BeautifulSoup(response.text, 'html.parser')
             img1 = str(soup.select('.serp-item__link'))
 
-            if "captcha" in soup:
+            print(soup)
+            if "captcha" in str(soup):
                 bot.send_message(chat_id=message.chat.id, text="Seems like we got a captcha. Try to use "
                                                                "Buttons of previous photo to get more images")
                 return
             if len(img1) == 2:
                 bot.send_message(chat_id=message.chat.id, text="Got no images. Try to enter another prompt, please")
+                return
 
             all_users[message.chat.id] = {'prompt': message.text, 'main_url': main_url, 'links': []}
             while True:
@@ -69,7 +71,14 @@ def search(message):
                            reply_markup=markup)
 
         except Exception as e:
-            bot.send_message(chat_id=message.from_user.id, text=str(e))
+            e = str(e)
+            if "Bad Request" in e:
+                bot.send_message(chat_id=message.chat.id,
+                                 text="Invalid link. Just press button one more time")
+            else:
+                bot.send_message(chat_id=message.chat.id,
+                                 text="Got an error, try again, please. Error text:\n"
+                                      f"{e}")
     else:
         mistake(message)
 
@@ -86,13 +95,16 @@ def callback_inline(call):
                 bot.send_message(chat_id=call.message.chat.id,
                                      text=f"Search again to get more. Your last command:"
                                           f"\n{all_users[id]['prompt']}\n\n"
-                                          f'<a href="{all_users[id]["mail_url"]}">All Results</a>',
+                                          f'<a href="{all_users[id]["main_url"]}">All Results</a>',
                                      parse_mode='HTML')
     except Exception as e:
         e = str(e)
         if str(call.message.chat.id) == e:
             bot.send_message(chat_id=call.message.chat.id,
                              text="Seems like there are no images in storage. Please, /search")
+        elif "Bad Request" in e:
+            bot.send_message(chat_id=call.message.chat.id,
+                             text="Invalid link. Just press button one more time")
         else:
             bot.send_message(chat_id=call.message.chat.id,
                              text="Got an error, try again, please. Error text:\n"
