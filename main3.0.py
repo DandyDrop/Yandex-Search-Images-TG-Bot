@@ -5,7 +5,7 @@ import telebot
 from telebot import types
 from bs4 import BeautifulSoup
 
-bot = telebot.TeleBot("5399775869:AAHLepfHtjFc6oZ-UjeeExX91S0SrU2bL5w")
+bot = telebot.TeleBot("YOUR_TOKEN")
 all_users = {}
 
 size_list = ["large", "medium", ""]
