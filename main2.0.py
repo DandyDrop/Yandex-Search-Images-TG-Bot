@@ -14,8 +14,14 @@ markup = types.InlineKeyboardMarkup()
 button1 = telebot.types.InlineKeyboardButton(text='More photos like this!', callback_data="buttonmore")
 markup.add(button1)
 
+@bot.message_handler(commands=["settings"])
+def set_settings(message):
+    bot.send_message(message.chat.id, text="SETTINGS")
+    bot.send_message(message.chat.id, text="Do u want to get the 'invalid link' message?" )
+
+
 def mistake(message):
-    bot.send_message(chat_id=message.from_user.id,
+    bot.send_message(chat_id=message.chat.id,
                      text="Wrong prompt, here are some right prompts examples:\n"
                           "/search beautiful mid journey arts|site=example.com|size=large\n"
                           "/search wide view of megalopolis|site=example.com|\n"
